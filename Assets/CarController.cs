@@ -34,7 +34,7 @@ public class CarController : MonoBehaviour
     public Wheel fl;
     public Wheel rr;
     public Wheel rl;
-    
+
     public int wheels;
 
     public float springRestDist = 0.38f;
@@ -61,10 +61,10 @@ public class CarController : MonoBehaviour
 
     void Start()
     {
-        fr = new () { transform = frt };
-        fl = new () { transform = flt };
-        rr = new () { transform = rrt };
-        rl = new () { transform = rlt };
+        fr = new() { transform = frt };
+        fl = new() { transform = flt };
+        rr = new() { transform = rrt };
+        rl = new() { transform = rlt };
     }
 
     void FixedUpdate()
@@ -111,7 +111,7 @@ public class CarController : MonoBehaviour
         throttle -= (throttle - vertical) * Time.deltaTime;
 
         var currentPower = ComputeGearBox(gear, ratios, drivingWheels, new() { power = 100, breakPower = 450, throttle = throttle });
-            
+
         AnimateWheel(fl, animFlw);
         AnimateWheel(fr, animFrw);
         AnimateWheel(rl, animRlw);
@@ -178,8 +178,8 @@ public class CarController : MonoBehaviour
         }
 
         wheel.groundPoint = grounded ? groundray.point : wheel.transform.position;
-        wheel.grounded = grounded;
         wheel.velocity = Vector3.Dot(wheel.transform.forward, velocity);
+        wheel.grounded = grounded;
 
         return wheel;
     }
