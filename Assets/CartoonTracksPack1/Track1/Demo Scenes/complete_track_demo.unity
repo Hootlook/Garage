@@ -128,6 +128,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4369981953471839712, guid: 75b153afc116e8c4b83693a9bbf7f515, type: 3}
   m_PrefabInstance: {fileID: 4973060994101731812}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &36640616 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7153773032615354848, guid: a3eee0eea39658f4986a18ac32f21fe8, type: 3}
+  m_PrefabInstance: {fileID: 490693094}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &350361205 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1167748281217693831, guid: 236da01a3a0ddb94399e07ecc8b36af9, type: 3}
@@ -557,6 +562,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a3eee0eea39658f4986a18ac32f21fe8, type: 3}
   m_PrefabInstance: {fileID: 490693094}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1251423052 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5076125986791315593, guid: a3eee0eea39658f4986a18ac32f21fe8, type: 3}
+  m_PrefabInstance: {fileID: 490693094}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1267186707
 GameObject:
   m_ObjectHideFlags: 0
@@ -884,10 +894,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 969946965949871908, guid: 32d5690c9db90e740bddd052e48efc2e, type: 3}
   m_PrefabInstance: {fileID: 5575043746776340544}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &2002933264 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8787480144312336470, guid: a3eee0eea39658f4986a18ac32f21fe8, type: 3}
+  m_PrefabInstance: {fileID: 490693094}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2013241676 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7695902167163595906, guid: bde06e7a046f3f341a9c307888b8df9a, type: 3}
   m_PrefabInstance: {fileID: 2027329387281841466}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2054134784 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8007945041191175238, guid: a3eee0eea39658f4986a18ac32f21fe8, type: 3}
+  m_PrefabInstance: {fileID: 490693094}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2071376544
 GameObject:
@@ -968,7 +988,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f1d9c24130ac5489f07d9b691de47f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 2071376546}
+  body: {fileID: 2071376546}
   frt: {fileID: 1936402900}
   flt: {fileID: 1007130677}
   rrt: {fileID: 1808940988}
@@ -976,27 +996,45 @@ MonoBehaviour:
   fr:
     height: 1
     maxCompress: 3
-    aired: 0
+    grounded: 0
+    groundPoint: {x: 0, y: 0, z: 0}
   fl:
     height: 1
     maxCompress: 3
-    aired: 0
+    grounded: 0
+    groundPoint: {x: 0, y: 0, z: 0}
   rr:
     height: 1
     maxCompress: 3
-    aired: 0
+    grounded: 0
+    groundPoint: {x: 0, y: 0, z: 0}
   rl:
     height: 1
     maxCompress: 3
-    aired: 0
+    grounded: 0
+    groundPoint: {x: 0, y: 0, z: 0}
   wheels: 0
-  springRestDist: 0.38
-  springStrength: 30
-  springDamper: 4
-  gripStrength: 0.01
+  springRestDist: 0.4
+  springStrength: 20
+  springDamper: 1
+  gripStrength: 1
   shockRate: 0.01
   shockRandom: 0.063
   compression: 0
+  steer: 0
+  maxsteer: 20
+  steerresponse: 0
+  turnamount: 1
+  countersteerRate: 0
+  gear: 0
+  throttle: 0
+  ratios: 320000005000000078000000a3000000c8000000f0000000
+  drivingWheels: []
+  animFlw: {fileID: 36640616}
+  animFrw: {fileID: 1251423052}
+  animRlw: {fileID: 2054134784}
+  animRrw: {fileID: 2002933264}
+  offset: 0.3
 --- !u!4 &2071376548
 Transform:
   m_ObjectHideFlags: 0
