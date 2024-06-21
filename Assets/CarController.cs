@@ -2,6 +2,9 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+// TODO: everything affects tire grip even stearing out of curves
+// https://youtu.be/azd287vwmQY?t=859
+
 [Serializable]
 public class Wheel
 {
@@ -14,11 +17,33 @@ public class Wheel
 }
 
 [Serializable]
-public struct EngineState
+public class EngineState
 {
-    public float power;
-    public float breakPower;
+    [Header("Config")]
+    public float revLimit = 8500;
+    public float revRecover = 2000;
+    public float revSpeed = 1000;
+    public float revIdle = 850;
+    public float throttleMin = 0.2f;
+
+    [Header("Runtime")]
+    public float enginePower;
+    public float engineBrake;
     public float throttle;
+    public float revs;
+
+    public bool IsRevingUp()
+    {
+        return enginePower > engineBrake;
+    }
+
+    public bool IsRevLimiting()
+    {
+        bool isHittingLimiter = revs >= revLimit;
+        //bool isRecovering = revs > revLimit - revRecover;
+
+        return isHittingLimiter;
+    }
 }
 
 public class CarController : MonoBehaviour
@@ -34,6 +59,8 @@ public class CarController : MonoBehaviour
     public Wheel fl;
     public Wheel rr;
     public Wheel rl;
+
+    public EngineState engine;
 
     public int wheels;
 
@@ -67,10 +94,10 @@ public class CarController : MonoBehaviour
         rl = new() { transform = rlt };
     }
 
-    void FixedUpdate()
+    void Update()
     {
         var isPressingGas = Input.GetAxisRaw("Vertical") > 0;
-        var isPressingBrakes = Input.GetKey(KeyCode.Space);
+        var isPressingBrakes = Input.GetAxisRaw("Jump") > 0;
         var vertical = Input.GetAxisRaw("Vertical");
         var horizontal = Input.GetAxisRaw("Horizontal");
 
@@ -97,25 +124,48 @@ public class CarController : MonoBehaviour
         fr.transform.localEulerAngles = fr.transform.up * -turn * 40;
         #endregion
 
-        wheels = 0;
-        wheels += ComputeWheel(body, fr).grounded ? 0 : 1;
-        wheels += ComputeWheel(body, fl).grounded ? 0 : 1;
-        wheels += ComputeWheel(body, rr).grounded ? 0 : 1;
-        wheels += ComputeWheel(body, rl).grounded ? 0 : 1;
-
         if (isPressingBrakes && !isPressingGas && body.velocity.magnitude < 5)
         {
             gear = -1;
         }
 
-        throttle -= (throttle - vertical) * Time.deltaTime;
+        throttle = isPressingGas ? 1 : 0;
 
-        var currentPower = ComputeGearBox(gear, ratios, drivingWheels, new() { power = 100, breakPower = 450, throttle = throttle });
+        ComputeEngine(throttle, engine);
+
+        var currentPower = ComputeGearBox(gear, ratios, drivingWheels, engine);
 
         AnimateWheel(fl, animFlw);
         AnimateWheel(fr, animFrw);
         AnimateWheel(rl, animRlw);
         AnimateWheel(rr, animRrw);
+
+        ComputeSounds(engine, new[] { fl, fr, rr, rl });
+    }
+
+    void FixedUpdate()
+    {
+        wheels = 0;
+        wheels += ComputeWheel(body, fr).grounded ? 0 : 1;
+        wheels += ComputeWheel(body, fl).grounded ? 0 : 1;
+        wheels += ComputeWheel(body, rr).grounded ? 0 : 1;
+        wheels += ComputeWheel(body, rl).grounded ? 0 : 1;        
+    }
+
+    void ComputeEngine(float throttle, EngineState engine)
+    {
+        bool isHittingLimiter = engine.revs >= engine.revLimit;
+        bool isRecovering = engine.revs > engine.revLimit - engine.revRecover;
+        bool isUnderIdle = engine.revs < engine.revIdle;
+        bool isPressingGas = throttle > 0;
+
+        var targetRev = isPressingGas ? engine.revLimit : engine.revIdle;
+
+        engine.revs += Math.Sign(targetRev - engine.revs) * engine.revSpeed;
+
+        // add clutch feedback to simulate the wobble between gears
+        // possibly with a sign value to modulate revs
+        // https://youtu.be/Jj0HQw0ZDOU?t=602
     }
 
     float ComputeGearBox(int gear, int[] ratios, Wheel[] drivingWeels, EngineState engine)
@@ -126,7 +176,7 @@ public class CarController : MonoBehaviour
         if (gear > -1)
         {
             currentRatio = gear > 0 ? ratios[gear - 1] : ratios[0];
-            currentPower = (engine.power / currentRatio * engine.throttle) - (engine.breakPower / currentRatio * -engine.throttle);
+            currentPower = (engine.enginePower / currentRatio * engine.throttle) - (engine.engineBrake / currentRatio * -engine.throttle);
         }
         else
         {
@@ -184,6 +234,7 @@ public class CarController : MonoBehaviour
         return wheel;
     }
 
+    [Header("Animation")]
     public Transform animFlw;
     public Transform animFrw;
     public Transform animRlw;
@@ -194,5 +245,53 @@ public class CarController : MonoBehaviour
     {
         mesh.position = wheel.grounded ? wheel.groundPoint + Vector3.up * offset : wheel.groundPoint;
         mesh.Rotate(wheel.velocity * 3, 0, 0);
+    }
+
+    [Header("Sounds")]
+    public AudioSource highon;
+    public AudioSource highoff;
+    public AudioSource limiter;
+    public AudioSource brake;
+    public AudioSource peel;
+
+    void ComputeSounds(EngineState engine, Wheel[] wheels)
+    {
+        if (engine.revs >= engine.revLimit - 1000)
+        {
+            highon.Stop();
+            highoff.Stop();
+
+            if (!limiter.isPlaying)
+            {
+                limiter.Play();
+            }
+        }
+        else
+        {
+            limiter.Stop();
+
+            if (engine.IsRevingUp())
+            {
+                highoff.Stop();
+
+                highon.pitch = engine.revs * 0.15f * 1e-3f;
+
+                if (!highon.isPlaying)
+                {
+                    highon.Play();
+                }
+            }
+            else
+            {
+                highon.Stop();
+
+                highoff.pitch = engine.revs / 6.53f * 1e-3f;
+
+                if (!highoff.isPlaying)
+                {
+                    highoff.Play();
+                }
+            }
+        }
     }
 }
